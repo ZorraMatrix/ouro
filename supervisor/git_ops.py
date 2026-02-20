@@ -306,12 +306,12 @@ def checkout_and_reset(branch: str, reason: str = "unspecified",
             )
             return False, msg
         log.info("Branch %s not on remote — creating from origin/main", branch)
-        subprocess.run(["git", "checkout", "-b", branch, "origin/main"],
+        subprocess.run(["git", "checkout", "-b", branch, "origin/main", "--"],
                         cwd=str(REPO_DIR), check=True)
         subprocess.run(["git", "push", "-u", "origin", branch],
                         cwd=str(REPO_DIR), check=True)
     else:
-        subprocess.run(["git", "checkout", branch], cwd=str(REPO_DIR), check=True)
+        subprocess.run(["git", "checkout", branch, "--"], cwd=str(REPO_DIR), check=True)
         subprocess.run(["git", "reset", "--hard", f"origin/{branch}"], cwd=str(REPO_DIR), check=True)
     # Clean __pycache__ to prevent stale bytecode (git checkout may not update mtime)
     for p in REPO_DIR.rglob("__pycache__"):
