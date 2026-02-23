@@ -74,7 +74,7 @@ def _build_runtime_section(env: Any, task: Dict[str, Any]) -> str:
         state_data = json.loads(state_json)
         remaining_usd = get_budget_remaining(state_data)
         or_limit = state_data.get("openrouter_limit")
-        total_usd = float(or_limit) if or_limit is not None else float(os.environ.get("TOTAL_BUDGET", "0"))
+        total_usd = float(or_limit) if or_limit is not None else 0.0
         spent_usd = (total_usd - remaining_usd) if remaining_usd is not None else float(state_data.get("spent_usd", 0))
         budget_info = {"total_usd": total_usd, "spent_usd": spent_usd, "remaining_usd": remaining_usd}
     except Exception:

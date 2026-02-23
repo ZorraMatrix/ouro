@@ -162,10 +162,9 @@ class BackgroundConsciousness:
             from supervisor.state import load_state
             st = load_state()
             or_limit = st.get("openrouter_limit")
-            if or_limit is not None:
-                total_budget = float(or_limit)
-            else:
-                total_budget = float(os.environ.get("TOTAL_BUDGET", "0"))
+            if or_limit is None:
+                return True  # no limit configured
+            total_budget = float(or_limit)
             if total_budget <= 0:
                 return True
             max_bg = total_budget * (self._bg_budget_pct / 100.0)
@@ -358,11 +357,10 @@ class BackgroundConsciousness:
             state_path = self._drive_root / "state" / "state.json"
             if state_path.exists():
                 state_data = json.loads(read_text(state_path))
-                total_budget = float(os.environ.get("TOTAL_BUDGET", "1"))
-                spent = float(state_data.get("spent_usd", 0))
-                if total_budget > 0:
-                    remaining = max(0, total_budget - spent)
-                    runtime_lines.append(f"Budget remaining: ${remaining:.2f} / ${total_budget:.2f}")
+                or_remaining = state_data.get("openrouter_limit_remaining")
+                or_limit = state_data.get("openrouter_limit")
+                if or_remaining is not None and or_limit is not None:
+                    runtime_lines.append(f"Budget remaining: ${float(or_remaining):.2f} / ${float(or_limit):.2f}")
         except Exception as e:
             log.debug("Failed to read state for budget info: %s", e)
 

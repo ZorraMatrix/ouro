@@ -240,18 +240,12 @@ EVOLUTION_BUDGET_RESERVE: float = 50.0  # Stop evolution when remaining < this
 def openrouter_budget_remaining(st: Dict[str, Any]) -> float:
     """Return remaining budget from OpenRouter API (single source of truth).
 
-    Falls back to TOTAL_BUDGET - spent_usd if OpenRouter limit not yet fetched.
-    Returns float('inf') if no limit is configured anywhere.
+    Returns float('inf') if OpenRouter limit not yet fetched.
     """
     or_remaining = st.get("openrouter_limit_remaining")
     if or_remaining is not None:
         return float(or_remaining)
-    # Fallback: TOTAL_BUDGET env var minus internal tracking
-    total = float(os.environ.get("TOTAL_BUDGET", "0"))
-    if total <= 0:
-        return float('inf')
-    spent = float(st.get("spent_usd") or 0.0)
-    return max(0.0, total - spent)
+    return float('inf')
 
 
 def check_openrouter_ground_truth() -> Optional[Dict[str, float]]:
