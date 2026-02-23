@@ -628,8 +628,7 @@ while True:
         if not text and not image_data:
             continue  # empty message, skip
 
-        # Feed observation to consciousness
-        _consciousness.inject_observation(f"Owner message: {text[:100]}")
+        # Consciousness pauses during task handling (see _run_task_and_resume below)
 
         agent = _get_chat_agent()
 
