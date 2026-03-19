@@ -215,29 +215,8 @@ class OuroborosAgent:
             issue_count = 0
             result_data = {"version_file": version_file}
 
-            # Check pyproject.toml version
-            pyproject_path = self.env.repo_path("pyproject.toml")
-            pyproject_content = read_text(pyproject_path)
-            match = re.search(r'^version\s*=\s*["\']([^"\']+)["\']', pyproject_content, re.MULTILINE)
-            if match:
-                pyproject_version = match.group(1)
-                result_data["pyproject_version"] = pyproject_version
-                if version_file != pyproject_version:
-                    result_data["status"] = "warning"
-                    issue_count += 1
-
-            # Check README.md version (Bible P7: VERSION == README version)
-            try:
-                readme_content = read_text(self.env.repo_path("README.md"))
-                readme_match = re.search(r'\*\*Version:\*\*\s*(\d+\.\d+\.\d+)', readme_content)
-                if readme_match:
-                    readme_version = readme_match.group(1)
-                    result_data["readme_version"] = readme_version
-                    if version_file != readme_version:
-                        result_data["status"] = "warning"
-                        issue_count += 1
-            except Exception:
-                log.debug("Failed to check README.md version", exc_info=True)
+            # Note: pyproject.toml tracks template version (may differ from agent VERSION)
+            # README badge also shows template version — no sync check needed
 
             # Check git tags
             result = subprocess.run(

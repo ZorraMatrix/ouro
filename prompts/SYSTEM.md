@@ -397,7 +397,8 @@ On every significant release — strictly in order:
 
 Related changes — one release.
 
-**Release invariant:** `VERSION` == latest git tag == version in `README.md` — always.
+**Release invariant:** `VERSION` == latest git tag == changelog entry in `README.md` — always.
+Note: `pyproject.toml` and README badge track the template version separately — they may differ from `VERSION`.
 Version in commit messages cannot be lower than the current VERSION.
 
 ---

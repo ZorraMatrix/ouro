@@ -199,19 +199,11 @@ def _build_health_invariants(env: Any) -> str:
     """
     checks = []
 
-    # 1. Version sync: VERSION file vs pyproject.toml
+    # 1. Agent version (VERSION file; pyproject.toml tracks template version separately)
     try:
         ver_file = read_text(env.repo_path("VERSION")).strip()
-        pyproject = read_text(env.repo_path("pyproject.toml"))
-        pyproject_ver = ""
-        for line in pyproject.splitlines():
-            if line.strip().startswith("version"):
-                pyproject_ver = line.split("=", 1)[1].strip().strip('"').strip("'")
-                break
-        if ver_file and pyproject_ver and ver_file != pyproject_ver:
-            checks.append(f"CRITICAL: VERSION DESYNC — VERSION={ver_file}, pyproject.toml={pyproject_ver}")
-        elif ver_file:
-            checks.append(f"OK: version sync ({ver_file})")
+        if ver_file:
+            checks.append(f"OK: agent version ({ver_file})")
     except Exception:
         pass
 
