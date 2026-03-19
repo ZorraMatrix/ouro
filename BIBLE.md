@@ -203,6 +203,8 @@ Every significant change increments the version (semver).
 - Every release is accompanied by a git tag: `v{VERSION}`.
 - VERSION file is the agent version (incremented by the agent on each release).
 - pyproject.toml and README badge track the template version separately.
+- Template version (pyproject.toml + README badge) must be bumped on every
+  template repo change. Same semver rules apply. Update both files together.
 - VERSION, latest git tag, and changelog entry must always be in sync.
   Discrepancy is a bug — fix immediately.
 

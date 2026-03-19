@@ -45,7 +45,10 @@ Three-layer design:
 
 - **SSOT pattern**: state.py owns state, llm.py owns API calls, registry.py owns tools. No duplicate definitions.
 - **Minimalism (Bible section 8)**: Modules should fit in LLM context (~2000 lines). Methods >150 lines signal decomposition needed.
-- **Versioning (Bible section 15)**: `VERSION` file is the agent version (incremented by the agent). `pyproject.toml` and README badge track the template version separately. Philosophy changes = MAJOR bump.
+- **Versioning (Bible section 15)**: Two independent version tracks:
+  - `VERSION` file = agent version (incremented by the agent itself, not by template changes).
+  - `pyproject.toml` version + README "Template version" badge = template version. **Bump this on every template repo change** (semver: MAJOR for breaking, MINOR for features, PATCH for fixes). Always update both `pyproject.toml` and `README.md` together.
+  - Philosophy changes = MAJOR bump (both tracks).
 - **Tool auto-discovery**: Add a new tool by creating `ouro/tools/new_tool.py` with a `get_tools()` function. No registration code needed.
 - **Agent Skills**: Pre-packaged instruction sets in `.agents/skills/` (skills.sh format). Install via `npx skills add`. Auto-discovered in LLM context.
 - **BIBLE.md is the protected core** (Bible section 17): Cannot be deleted, gutted, or replaced wholesale. Changes require user approval and MAJOR version bump.
