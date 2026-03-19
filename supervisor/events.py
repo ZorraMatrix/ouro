@@ -67,7 +67,7 @@ def _handle_status_update(evt: Dict[str, Any], ctx: Any) -> None:
     status["counter"] = status.get("counter", 0) + 1
     counter = status["counter"]
     hourglass = "⏳" if counter % 2 == 0 else "⌛"
-    new_text = f"{hourglass} {text[:180]} · {counter}" if text else hourglass
+    new_text = f"{hourglass} *{text[:180]}* · {counter}" if text else hourglass
     now = time.time()
     if now - status["last_edit_ts"] < 1.0:
         status["last_text"] = new_text  # store for lazy flush
