@@ -191,25 +191,7 @@ assert ok, f"Bootstrap failed: {msg}"
 _init_st = load_state()
 if not _init_st.get("initialized"):
     log.info("First-run initialization (Bible section 18)")
-    # Create ARCHITECTURE.md if missing
-    _arch_path = REPO_DIR / "ARCHITECTURE.md"
-    if not _arch_path.exists():
-        _arch_path.write_text(
-            "# Architecture\n\n"
-            "This file describes the technical architecture of Ouroboros.\n"
-            "Maintained by the agent. See BIBLE.md section 8.\n",
-            encoding="utf-8",
-        )
-    # Create IMPROVE.md if missing
-    _improve_path = REPO_DIR / "IMPROVE.md"
-    if not _improve_path.exists():
-        _improve_path.write_text(
-            "# How to Improve Effectively\n\n"
-            "This file captures lessons on self-improvement.\n"
-            "Maintained by the agent. See BIBLE.md section 8.\n",
-            encoding="utf-8",
-        )
-    # Create improvements-log/ directory
+    # Ensure improvements-log/ directory exists
     _implog_dir = REPO_DIR / "improvements-log"
     _implog_dir.mkdir(parents=True, exist_ok=True)
     (_implog_dir / ".gitkeep").touch(exist_ok=True)
@@ -230,14 +212,13 @@ if not _init_st.get("initialized"):
             log.warning("Failed to pre-install find-skills skill", exc_info=True)
     # Commit and push init files so workers don't see untracked files
     try:
-        _sp.run(["git", "add", "ARCHITECTURE.md", "IMPROVE.md", "improvements-log/",
-                 ".agents/"],
+        _sp.run(["git", "add", "improvements-log/", ".agents/"],
                 cwd=str(REPO_DIR), timeout=10, check=True)
         # Only commit if there are staged changes
         _diff = _sp.run(["git", "diff", "--cached", "--quiet"],
                         cwd=str(REPO_DIR), timeout=10)
         if _diff.returncode != 0:
-            _sp.run(["git", "commit", "-m", "init: add ARCHITECTURE.md, IMPROVE.md, improvements-log, agent skills"],
+            _sp.run(["git", "commit", "-m", "init: add improvements-log, agent skills"],
                     cwd=str(REPO_DIR), timeout=30, check=True)
             _sp.run(["git", "push", "origin", BRANCH_DEV],
                     cwd=str(REPO_DIR), timeout=60, check=True)

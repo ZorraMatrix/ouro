@@ -145,7 +145,7 @@ The launcher (`launcher.py`) automatically handles first-run initialization:
 
 1. Validates all API keys and connections
 2. Initializes git — creates a dev branch from `main`, pushes to your fork
-3. Creates `ARCHITECTURE.md`, `IMPROVE.md`, and `improvements-log/`
+3. Ensures `improvements-log/` directory and agent skills are set up
 4. Pre-installs the `find-skills` agent skill
 5. Commits and pushes initial files
 6. Seeds budget from OpenRouter API

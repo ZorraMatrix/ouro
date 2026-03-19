@@ -301,7 +301,7 @@ sleep(_next_wakeup_sec, default 300s)
 | 4 | telegram.py | Verify bot token, get bot info |
 | 5 | git_ops.py | Clone or fetch repo, checkout dev branch |
 | 6 | git_ops.py | Pull latest code, sync dependencies if requirements.txt changed |
-| 7 | launcher.py | First-run init (if needed): create ARCHITECTURE.md, IMPROVE.md, install skills |
+| 7 | launcher.py | First-run init (if needed): ensure improvements-log/, install skills |
 | 8 | workers.py | Spawn worker pool (up to MAX_WORKERS processes) |
 | 9 | queue.py | Restore queue_snapshot.json (if <15 min old) |
 | 10 | workers.py | Auto-resume interrupted RUNNING tasks |
