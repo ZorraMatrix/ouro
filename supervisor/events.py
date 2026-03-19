@@ -37,14 +37,15 @@ def _handle_status_start(evt: Dict[str, Any], ctx: Any) -> None:
     if not chat_id or not task_id:
         return
     try:
-        ok, err, sent_id = ctx.TG.send_message_reply(chat_id, "⏳", original_msg_id)
+        initial_text = "⏳ thinking…"
+        ok, err, sent_id = ctx.TG.send_message_reply(chat_id, initial_text, original_msg_id)
         if ok and sent_id:
             _STATUS_MESSAGES[task_id] = {
                 "chat_id": chat_id,
                 "status_msg_id": sent_id,
                 "original_msg_id": original_msg_id,
                 "last_edit_ts": time.time(),
-                "last_text": "⏳",
+                "last_text": initial_text,
                 "counter": 0,
             }
     except Exception:
@@ -61,11 +62,7 @@ def _handle_status_update(evt: Dict[str, Any], ctx: Any) -> None:
     status = _STATUS_MESSAGES.get(task_id)
     text = str(evt.get("text") or "")
     if not status:
-        # Fallback: send as a regular progress message (old behavior)
-        chat_id = int(evt.get("chat_id") or 0)
-        if chat_id and text:
-            ctx.send_with_budget(chat_id, f"💬 {text}", fmt="markdown", is_progress=True)
-        return
+        return  # No status message for this task (evolution/consciousness) — skip silently
     # Increment counter before throttle check (every event counts)
     status["counter"] = status.get("counter", 0) + 1
     counter = status["counter"]
