@@ -37,7 +37,7 @@ def _handle_status_start(evt: Dict[str, Any], ctx: Any) -> None:
     if not chat_id or not task_id:
         return
     try:
-        initial_text = "⏳ thinking…"
+        initial_text = "⏳ sto pensando…"
         ok, err, sent_id = ctx.TG.send_message_reply(chat_id, initial_text, original_msg_id)
         if ok and sent_id:
             _STATUS_MESSAGES[task_id] = {
