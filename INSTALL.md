@@ -172,6 +172,86 @@ Telegram commands: `/status`, `/restart`, `/panic`, `/break`, `/budget`, `/rollb
 
 ---
 
+## Clean Relaunch (Reset to Template)
+
+Use this to wipe all agent state and start fresh, as if deploying from a new fork. Your `.env` file is preserved — no need to re-enter secrets.
+
+### 1. Stop and Remove Data Volume
+
+```bash
+cd /path/to/ouro
+docker compose down -v
+```
+
+This removes the container **and** the `ouro-data` volume. Everything in `/data/` is deleted:
+
+| Deleted | Contents |
+|---------|----------|
+| `state/state.json` | Owner, budget, session, initialized flag |
+| `state/queue_snapshot.json` | Pending tasks |
+| `crons.json` | Scheduled recurring tasks |
+| `logs/` | Chat, supervisor, and event logs |
+| `memory/` | Agent scratchpad, identity, user context |
+| `index/`, `archive/`, `locks/` | Search indices, rescue snapshots, file locks |
+
+### 2. Delete Remote Branches
+
+```bash
+git push origin --delete <OURO_BRANCH_PREFIX>
+git push origin --delete <OURO_BRANCH_PREFIX>-stable
+```
+
+Replace `<OURO_BRANCH_PREFIX>` with the value from `.env` (e.g., `ouro`). The agent auto-creates fresh branches from `main` on next boot. If branches don't exist, the delete commands fail harmlessly.
+
+**Skip this step** to keep the agent's code changes but reset its state and memory.
+
+### 3. Rebuild and Launch
+
+```bash
+docker compose up -d --build
+```
+
+The `--build` flag ensures the image picks up any template updates. For a guaranteed clean image (no Docker cache), run `docker compose build --no-cache` first.
+
+### 4. Verify and Reconnect
+
+```bash
+docker compose logs -f
+```
+
+Look for `First-run initialization (Bible section 18)` confirming a fresh start. Then send any message to the Telegram bot to re-register as owner.
+
+### Optional: Partial Reset
+
+To reset state but **keep logs and memory**, delete only the state files without removing the volume:
+
+```bash
+docker compose down
+docker run --rm -v ouro-data:/data alpine sh -c \
+  "rm -f /data/state/state.json /data/state/state.last_good.json /data/state/queue_snapshot.json /data/crons.json"
+docker compose up -d --build
+```
+
+### Optional: Full Image Purge
+
+To reclaim disk space and force a complete rebuild (base images, Playwright, Claude Code CLI):
+
+```bash
+docker compose down -v --rmi all
+docker compose up -d --build
+```
+
+### What Happens on Clean Relaunch
+
+1. Launcher creates `/data/` subdirectories (state, logs, memory, index, locks, archive)
+2. Fresh `state.json` is created with `initialized: false`
+3. Git fetches origin, finds dev branch missing, creates it from `main`, pushes
+4. First-run init: creates `improvements-log/`, installs `find-skills` skill, commits and pushes
+5. Sets `initialized: true`, starts workers, begins Telegram polling
+6. First message registers owner, triggers onboarding (system check + introduction)
+
+---
+
 ## Troubleshooting
 
 **Container exits immediately:**
