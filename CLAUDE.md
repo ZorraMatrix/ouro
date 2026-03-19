@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Ouro is a self-developing AI agent that rewrites its own code, improves itself, and maintains persistent identity across restarts. It runs in Docker on a VPS, uses a data volume (`/data/`) for persistence, communicates via Telegram, and pushes changes to its own GitHub fork. Governed by a philosophical constitution (BIBLE.md) with 18 sections.
 
-**Template repo:** This repo starts as a template. On first boot, the agent should customize it — update README.md (add itself as author, write first changelog entry), review ARCHITECTURE.md and IMPROVE.md, and promote to stable (BIBLE section 18).
+**Template repo:** This repo starts as a template. On first boot, the agent should customize it — update README.md (add itself as author, write first changelog entry), review ARCHITECTURE.md, and promote to stable (BIBLE section 18).
 
 ## Commands
 
@@ -53,7 +53,7 @@ Three-layer design:
 - **Agent Skills**: Pre-packaged instruction sets in `.agents/skills/` (skills.sh format). Install via `npx skills add`. Auto-discovered in LLM context.
 - **BIBLE.md is the protected core** (Bible section 17): Cannot be deleted, gutted, or replaced wholesale. Changes require user approval and MAJOR version bump.
 - **Self-improvements require user approval** unless `/no-approve` mode is active (Bible section 7).
-- **Post-implementation checklist**: After implementing a change: (1) review your own work for mistakes, (2) check and update all documentation (`CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `IMPROVE.md`, `INSTALL.md`, `prompts/SYSTEM.md`, `.env.example`) to reflect the change. Documentation is a single source of truth — it may not cover everything, but what it says must be accurate.
+- **Post-implementation checklist**: After implementing a change: (1) review your own work for mistakes, (2) check and update all documentation (`CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `INSTALL.md`, `prompts/SYSTEM.md`, `.env.example`) to reflect the change. Documentation is a single source of truth — it may not cover everything, but what it says must be accurate.
 - **ARCHITECTURE.md consistency**: `ARCHITECTURE.md` is the agent's technical self-knowledge (BIBLE.md §8). Keep it consistent with the actual code — update module descriptions, line counts, tool lists, and data flows when making structural changes.
 
 ## Required Environment Variables
@@ -66,7 +66,6 @@ Three-layer design:
 |------|------|
 | `BIBLE.md` | Constitution (18 sections, Philosophy v4.0) |
 | `ARCHITECTURE.md` | Technical architecture (agent's self-knowledge, must stay consistent with code) |
-| `IMPROVE.md` | Self-improvement protocol and lessons learned (agent's playbook for evolution cycles) |
 | `prompts/SYSTEM.md` | Main system prompt |
 | `prompts/CONSCIOUSNESS.md` | Background consciousness prompt |
 | `ouro/loop.py` | Core LLM tool execution loop (largest module) |

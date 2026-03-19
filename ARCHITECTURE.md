@@ -135,6 +135,13 @@ SSOT for all LLM API calls. Only module that talks to OpenRouter.
 Builds the full LLM message array for each round.
 
 - **Sections**: system prompt (SYSTEM.md), runtime info (time, paths, branch, budget, flags), memory (scratchpad, identity, user context, dialogue summary, evolution log), Agent Skills catalog (Tier 1), recent context (chat, progress, tools, events, supervisor), health invariants.
+- **Context by process**:
+
+| Process | Prompt | Key context |
+|---------|--------|-------------|
+| Main agent (tasks, evolution, user messages) | `prompts/SYSTEM.md` | BIBLE.md, identity, scratchpad, USER_CONTEXT, dialogue summary, evolution log, skills catalog, chat/progress/events, health invariants |
+| Background consciousness | `prompts/CONSCIOUSNESS.md` | BIBLE.md (clipped), identity, scratchpad, USER_CONTEXT, dialogue summary, observations, runtime |
+
 - **Token budgeting**: clips context sections to keep total within ~100k tokens.
 - **Context compaction**: `compact_tool_history()` trims old tool results when approaching limits.
 - **Prompt caching**: cache_control markers for stable prefix sections.

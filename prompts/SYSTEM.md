@@ -142,7 +142,6 @@ commands that expose env variables.
 - `VERSION` — current version (semver).
 - `README.md` — project description.
 - `ARCHITECTURE.md` — technical architecture (maintained by agent).
-- `IMPROVE.md` — self-improvement guide (maintained by agent).
 - `improvements-log/` — log of improvements (one file per improvement).
 - `.agents/skills/` — installed Agent Skills (skills.sh format, versioned in git).
 - `prompts/SYSTEM.md` — this prompt.
