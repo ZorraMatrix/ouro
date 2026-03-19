@@ -39,7 +39,7 @@ Three-layer design:
 
 **Entry points**: `launcher.py` -> `supervisor/workers.py` -> `ouro/agent.py` -> `ouro/loop.py`.
 
-**Persistence**: All state lives on the data volume at `/data/` (JSON state files, JSONL event logs, markdown memory files). No database. Atomic writes with file locks. Agent Skills live in `.agents/skills/` in the repo (versioned in git).
+**Persistence**: All state lives on the data volume at `/data/` (JSON state files, JSONL event logs, markdown memory files, cron schedules). No database. Atomic writes with file locks. Agent Skills live in `.agents/skills/` in the repo (versioned in git).
 
 ## Key Conventions
 
@@ -73,6 +73,7 @@ Three-layer design:
 | `ouro/tools/registry.py` | Tool plugin system (SSOT) |
 | `ouro/tools/skills.py` | Agent Skills (skills.sh) — discover, activate, install, search |
 | `supervisor/state.py` | Persistent state management |
+| `supervisor/cron.py` | Cron scheduler (recurring tasks, `/data/crons.json`) |
 | `supervisor/workers.py` | Worker process lifecycle |
 | `launcher.py` | Main entry point (Docker VPS) |
 | `tests/e2e/harness.py` | E2E test harness (Docker-sandboxed, real LLM) |

@@ -392,6 +392,8 @@ class BackgroundConsciousness:
         "chat_history",
         # GitHub Issues
         "list_github_issues", "get_github_issue",
+        # Cron (read-only awareness)
+        "cron_list",
     })
 
     def _build_registry(self) -> "ToolRegistry":

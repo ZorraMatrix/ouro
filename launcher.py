@@ -135,7 +135,7 @@ os.environ["OURO_BRANCH_PREFIX"] = str(_BRANCH_PREFIX)
 from supervisor.state import (
     init as state_init, load_state, save_state, append_jsonl,
     update_budget_from_usage, status_text, rotate_chat_log_if_needed,
-    init_state,
+    init_state, openrouter_budget_remaining,
 )
 state_init(DRIVE_ROOT)
 init_state()
@@ -177,6 +177,9 @@ workers_init(
 )
 
 from supervisor.events import dispatch_event
+
+from supervisor.cron import init as cron_init, check_and_enqueue_due_crons
+cron_init(DRIVE_ROOT)
 
 # ----------------------------
 # 5) Bootstrap repo
@@ -537,6 +540,17 @@ while True:
 
     enforce_task_timeouts()
     enqueue_evolution_task_if_needed()
+    try:
+        _cron_st = load_state()
+        _cron_owner = int(_cron_st.get("owner_chat_id") or 0)
+        _cron_budget = openrouter_budget_remaining(_cron_st)
+        check_and_enqueue_due_crons(
+            running=RUNNING,
+            enqueue_fn=enqueue_task, owner_chat_id=_cron_owner,
+            budget_remaining=_cron_budget,
+        )
+    except Exception:
+        log.warning("Cron check failed", exc_info=True)
     assign_tasks()
     persist_queue_snapshot(reason="main_loop")
 

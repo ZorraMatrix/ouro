@@ -86,6 +86,16 @@ Priority task queue with timeout enforcement.
 - **Evolution scheduling**: auto-enqueues evolution tasks if enabled + budget available.
 - **Persistence**: snapshots to `/data/state/queue_snapshot.json` for restart recovery (max 15 min staleness).
 
+### supervisor/cron.py (~230 lines)
+
+Persistent cron scheduler. Stores recurring tasks in `/data/crons.json` with its own file lock.
+
+- **CRUD**: `add_cron()`, `remove_cron()`, `toggle_cron()`, `list_crons()`. Validates expressions via `croniter`.
+- **Due-checking**: `check_and_enqueue_due_crons()` called once per main loop tick. Uses `croniter` to determine if a cron should fire based on `last_fired_at`.
+- **Overlap prevention**: skips cron if `last_task_id` is still in RUNNING.
+- **Budget gate**: skips all crons if budget below `EVOLUTION_BUDGET_RESERVE`.
+- **Notifications**: optional per-cron `notify` flag sends Telegram message on fire.
+
 ### supervisor/events.py (~486 lines)
 
 Event dispatcher. Workers communicate with supervisor exclusively through a multiprocessing Queue.
@@ -203,6 +213,7 @@ Create `ouro/tools/my_tool.py`, export `get_tools() -> List[ToolEntry]`. No regi
 | tool_discovery.py | 103 | `list_available_tools`, `enable_tools` |
 | compact_context.py | 80 | `compact_context` |
 | health.py | 79 | `codebase_health` |
+| cron.py | 90 | `cron_list`, `cron_add`, `cron_remove`, `cron_toggle` |
 | search.py | 46 | `web_search` |
 
 ---
@@ -228,8 +239,10 @@ All persistent state lives on the `/data/` volume. No database — only files wi
 │   ├── state.json              # Master state (SSOT: owner, budget, branch, flags)
 │   ├── state.last_good.json    # Backup of last valid state
 │   └── queue_snapshot.json     # Task queue for restart recovery
+├── crons.json                     # Recurring scheduled tasks (cron store)
 ├── locks/
-│   └── state.lock              # File lock for atomic state updates
+│   ├── state.lock              # File lock for atomic state updates
+│   └── crons.lock              # File lock for cron store
 ├── logs/
 │   ├── chat.jsonl              # All Telegram messages (in/out)
 │   ├── supervisor.jsonl        # Worker events, timeouts, restarts
@@ -365,7 +378,8 @@ Reference table for complexity tracking (BIBLE.md §8: keep under 2000 lines).
 | supervisor/events.py | ~486 | OK |
 | supervisor/git_ops.py | ~465 | OK |
 | supervisor/queue.py | ~421 | OK |
-| ouro/tools/ (17 modules) | ~4265 | OK (largest: evolution_stats.py 433) |
+| supervisor/cron.py | ~230 | OK |
+| ouro/tools/ (18 modules) | ~4355 | OK (largest: evolution_stats.py 433) |
 | ouro/memory.py | ~269 | OK |
 | ouro/llm.py | ~290 | OK |
 | ouro/tools/registry.py | ~195 | OK |
