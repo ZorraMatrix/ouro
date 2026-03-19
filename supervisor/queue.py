@@ -390,8 +390,8 @@ def enqueue_evolution_task_if_needed() -> None:
     if not owner_chat_id:
         return
 
-    # Once-per-day throttle
-    last_at = st.get("last_evolution_task_at", "")
+    # Once-per-day throttle (also delays first evolution 24h after owner registration)
+    last_at = st.get("last_evolution_task_at") or st.get("last_owner_message_at") or ""
     if last_at:
         try:
             last_dt = datetime.datetime.fromisoformat(last_at)
