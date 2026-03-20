@@ -180,10 +180,8 @@ def _handle_send_message(evt: Dict[str, Any], ctx: Any) -> None:
 
         status = _STATUS_MESSAGES.get(task_id)
 
-        # Progress messages: don't touch status, just get reply_to
+        # Progress messages: don't touch status, send independently
         if status and is_progress:
-            if not reply_to:
-                reply_to = status.get("original_msg_id")
             ctx.send_with_budget(
                 int(evt["chat_id"]),
                 str(evt.get("text") or ""),
@@ -194,34 +192,21 @@ def _handle_send_message(evt: Dict[str, Any], ctx: Any) -> None:
             )
             return
 
-        # Final message: pop status and edit-in-place (no delete+send race)
+        # Final message: delete status and send new independent message
         status = _STATUS_MESSAGES.pop(task_id, None)
         if status:
-            final_text = str(evt.get("text") or "")
-            edited = False
-            if final_text:
-                try:
-                    parse_mode = "Markdown" if fmt == "markdown" else fmt
-                    ctx.TG.edit_message_text(status["chat_id"], status["status_msg_id"], final_text, parse_mode=parse_mode)
-                    edited = True
-                except Exception:
-                    log.debug("Failed to edit status→final, falling back to delete+send", exc_info=True)
-            if not edited:
-                # Fallback: delete status and send new message
-                try:
-                    ctx.TG.delete_message(status["chat_id"], status["status_msg_id"])
-                except Exception:
-                    log.debug("Failed to delete status message", exc_info=True)
-                if not reply_to:
-                    reply_to = status.get("original_msg_id")
-                ctx.send_with_budget(
-                    int(evt["chat_id"]),
-                    final_text,
-                    log_text=(str(log_text) if isinstance(log_text, str) else None),
-                    fmt=fmt,
-                    is_progress=False,
-                    reply_to_message_id=int(reply_to) if reply_to else None,
-                )
+            try:
+                ctx.TG.delete_message(status["chat_id"], status["status_msg_id"])
+            except Exception:
+                log.debug("Failed to delete status message", exc_info=True)
+            ctx.send_with_budget(
+                int(evt["chat_id"]),
+                str(evt.get("text") or ""),
+                log_text=(str(log_text) if isinstance(log_text, str) else None),
+                fmt=fmt,
+                is_progress=False,
+                reply_to_message_id=int(reply_to) if reply_to else None,
+            )
             return
 
         # No status message — send normally
@@ -247,15 +232,13 @@ def _handle_task_done(evt: Dict[str, Any], ctx: Any) -> None:
     task_id = evt.get("task_id")
     task_type = str(evt.get("task_type") or "")
 
-    # Safety cleanup: edit orphaned status message to show completion (not delete).
-    # Edit-in-place means orphaned status messages on crash show "done" instead of
-    # staying stuck on "thinking..." forever.
+    # Safety cleanup: delete orphaned status message
     status = _STATUS_MESSAGES.pop(str(task_id) if task_id else "", None)
     if status:
         try:
-            ctx.TG.edit_message_text(status["chat_id"], status["status_msg_id"], "\u2705 *done*")
+            ctx.TG.delete_message(status["chat_id"], status["status_msg_id"])
         except Exception:
-            log.debug("Failed to edit orphaned status message on task_done", exc_info=True)
+            log.debug("Failed to delete orphaned status message on task_done", exc_info=True)
     wid = evt.get("worker_id")
 
     # Track evolution task success/failure for circuit breaker
