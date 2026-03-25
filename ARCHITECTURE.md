@@ -72,7 +72,7 @@ Telegram Bot API wrapper (raw HTTP, no library dependency).
 Repository management and safe code updates.
 
 - `ensure_repo_present()` — clone or fetch, configure remotes, set git identity.
-- `safe_restart()` — stash dirty state → pull latest → pip install if deps changed → validate imports → respawn workers.
+- `safe_restart()` — stash dirty state → pull latest → uv pip install if deps changed → validate imports → respawn workers.
 - Rescue snapshots: backs up dirty files + git state to `/data/archive/` before risky operations.
 - `checkout_and_reset()` — branch switching with hard reset.
 
@@ -275,7 +275,7 @@ Identify improvement
   → claude_code_edit (delegates to Claude Code CLI)
   → repo_commit_push → git push to dev branch
   → request_restart
-  → supervisor: safe_restart() → stash → pull → pip install → respawn
+  → supervisor: safe_restart() → stash → pull → uv pip install → respawn
   → new worker: verify SHA matches expected
 ```
 

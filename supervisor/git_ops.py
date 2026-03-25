@@ -335,7 +335,7 @@ def checkout_and_reset(branch: str, reason: str = "unspecified",
 
 def sync_runtime_dependencies(reason: str) -> Tuple[bool, str]:
     req_path = REPO_DIR / "requirements.txt"
-    cmd: List[str] = [sys.executable, "-m", "pip", "install", "-q"]
+    cmd: List[str] = ["uv", "pip", "install", "-q"]
     source = ""
     if req_path.exists():
         cmd += ["-r", str(req_path)]

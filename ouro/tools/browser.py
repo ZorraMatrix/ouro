@@ -48,7 +48,7 @@ def _ensure_playwright_installed():
         import playwright  # noqa: F401
     except ImportError:
         log.info("Playwright not found, installing...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "playwright"])
+        subprocess.check_call(["uv", "pip", "install", "playwright"])
 
     try:
         from playwright.sync_api import sync_playwright
