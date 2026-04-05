@@ -1,5 +1,5 @@
 # ============================
-# Ouro — Runtime launcher (entry point for Docker VPS)
+# Ouro — Runtime launcher (entry point, executed natively)
 # ============================
 # Thin orchestrator: secrets, bootstrap, main loop.
 # Heavy logic lives in supervisor/ package.
@@ -11,11 +11,21 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 log = logging.getLogger(__name__)
 
 # ----------------------------
+# -1) Install launcher deps
+# ----------------------------
+def install_launcher_deps() -> None:
+    subprocess.run(["uv", "pip", "install", "-r", "requirements.txt"], check=True)
+install_launcher_deps()
+
+# ----------------------------
 # 0) Load .env file
 # ----------------------------
 from dotenv import load_dotenv
 load_dotenv()
 
+# ----------------------------
+# 0.1) provide apply_patch shim
+# ----------------------------
 from ouro.apply_patch import install as install_apply_patch
 from ouro.llm import DEFAULT_LIGHT_MODEL
 install_apply_patch()
@@ -23,7 +33,6 @@ install_apply_patch()
 # ----------------------------
 # 1) Secrets + runtime config
 # ----------------------------
-
 def get_secret(name: str, default: Optional[str] = None, required: bool = False) -> Optional[str]:
     v = os.environ.get(name, default)
     if v is not None and str(v).strip() == "":
@@ -54,6 +63,8 @@ GITHUB_TOKEN = get_secret("GITHUB_TOKEN", required=True)
 OPENAI_API_KEY = get_secret("OPENAI_API_KEY", default="")
 ANTHROPIC_API_KEY = get_secret("ANTHROPIC_API_KEY", required=True)
 COMPOSIO_API_KEY = get_secret("COMPOSIO_API_KEY", required=True)
+OPENROUTER_BASE_URL = get_secret("OPENROUTER_BASE_URL", required=True)
+ANTHROPIC_BASE_URL = get_secret("ANTHROPIC_BASE_URL", required=True)
 GITHUB_USER = get_cfg("GITHUB_USER")
 GITHUB_REPO = get_cfg("GITHUB_REPO")
 assert GITHUB_USER and str(GITHUB_USER).strip(), "GITHUB_USER not set. Add it to your .env file."
@@ -78,8 +89,10 @@ DIAG_SLOW_CYCLE_SEC = _parse_int_cfg(
 )
 
 os.environ["OPENROUTER_API_KEY"] = str(OPENROUTER_API_KEY)
+os.environ["OPENROUTER_BASE_URL"] = str(OPENROUTER_BASE_URL)
 os.environ["OPENAI_API_KEY"] = str(OPENAI_API_KEY or "")
-os.environ["ANTHROPIC_API_KEY"] = str(ANTHROPIC_API_KEY)
+os.environ["ANTHROPIC_API_KEY"] = str(ANTHROPIC_API_KEY) # or ""
+os.environ["ANTHROPIC_BASE_URL"] = str(ANTHROPIC_BASE_URL)
 os.environ["GITHUB_USER"] = str(GITHUB_USER)
 os.environ["GITHUB_REPO"] = str(GITHUB_REPO)
 os.environ["OURO_MODEL"] = str(MODEL_MAIN or "anthropic/claude-sonnet-4.6")
@@ -93,8 +106,8 @@ os.environ["TELEGRAM_BOT_TOKEN"] = str(TELEGRAM_BOT_TOKEN)
 # ----------------------------
 # 2) Paths
 # ----------------------------
-DRIVE_ROOT = pathlib.Path(os.environ.get("DRIVE_ROOT", "/data")).resolve()
-REPO_DIR = pathlib.Path(os.environ.get("OURO_REPO_DIR", "/app")).resolve()
+DRIVE_ROOT = pathlib.Path(os.environ.get("DRIVE_ROOT", "./data")).resolve() # "/data"
+REPO_DIR = pathlib.Path(os.environ.get("OURO_REPO_DIR", "./repo")).resolve() # "/app"
 
 for sub in ["state", "logs", "memory", "index", "locks", "archive"]:
     (DRIVE_ROOT / sub).mkdir(parents=True, exist_ok=True)
@@ -122,9 +135,9 @@ if not CHAT_LOG_PATH.exists():
 # ----------------------------
 # 3) Git constants
 # ----------------------------
-_BRANCH_PREFIX = get_cfg("OURO_BRANCH_PREFIX")
+_BRANCH_PREFIX = get_cfg("OURO_BRANCH_PREFIX") # default="ouroboros"
 assert _BRANCH_PREFIX and str(_BRANCH_PREFIX).strip(), "OURO_BRANCH_PREFIX not set. Add it to your .env file."
-BRANCH_DEV = _BRANCH_PREFIX
+BRANCH_DEV = _BRANCH_PREFIX # str(_BRANCH_PREFIX)
 BRANCH_STABLE = f"{_BRANCH_PREFIX}-stable"
 REMOTE_URL = f"https://{GITHUB_TOKEN}:x-oauth-basic@github.com/{GITHUB_USER}/{GITHUB_REPO}.git"
 os.environ["OURO_BRANCH_PREFIX"] = str(_BRANCH_PREFIX)
